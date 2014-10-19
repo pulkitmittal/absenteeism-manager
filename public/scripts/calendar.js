@@ -286,11 +286,6 @@ angular
 				viewRender: function (view) {
 					$scope.calendar2.fullCalendar('gotoDate', view.end);
 					$scope.calendar3.fullCalendar('gotoDate', Date.parse(view.end).addMonths(1));
-				},
-				eventAfterAllRender: function(view) {
-					if(moment(view.start).isBefore(moment().subtract(1, 'months'))) {
-						$('.fc-button-prev').removeClass('fc-state-default').addClass('fc-state-disabled');
-					}
 				}
 			}
 		});
