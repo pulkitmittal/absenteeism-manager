@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+<title>Calendar</title>
+<link rel="stylesheet" href="bower_components/fullcalendar/fullcalendar.css">
+<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="stylesheets/style.css">
+</head>
+<body ng-controller="BodyController">
+	
+<header class="navbar navbar-default navbar-fixed-top">
+<div class="navbar-inner">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-3" ng-click="isCollapsed = !isCollapsed">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand visible-xs" href="#">Absenteeism Manager</a>
+		</div>
+		<nav class="hidden-xs">
+			<ul class="nav navbar-nav">
+				<a href="#top" role="button" class="navbar-brand">
+					Absenteeism Manager
+				</a>
+			</ul>
+			<ul class="nav navbar-nav pull-right">
+				<li class="dropdown">
+					<a role="button" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+						<%= username %> <b class="caret"></b>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Settings</a></li>
+						<li><a href="#">Logout</a></li>
+					</ul>
+				</li>
+			</ul>
+		</nav>
+		<nav class="visible-xs collapse" collapse="!isCollapsed" style="height: 0px;">
+			<ul class="nav navbar-nav">
+				<li><a href="#directives_small" ng-click="isCollapsed = !isCollapsed"><%= username %></a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>
+</header>
+
+<div class="main container" ng-controller="MyController">
+	<div class="row">
+		<div class="col-md-4 pull-right text-right">
+			<button class="btn btn-primary btn-sm" ng-click="addLeave()"><span class="glyphicon glyphicon-plus"></span> Add a Leave</button>
+		</div>
+	</div>
+	<br/>
+	<div class="row">
+		<div ui-calendar="uiConfig1.calendar" class="col-md-4" ng-model="eventSources" calendar="calendar1"></div>
+		<div ui-calendar="uiConfig2.calendar" class="col-md-4" ng-model="eventSources" calendar="calendar2"></div>
+		<div ui-calendar="uiConfig3.calendar" class="col-md-4" ng-model="eventSources" calendar="calendar3"></div>
+	</div>
+</div> 
+
+<!--Modals-->
+<div ng-controller="AddAbsenceModalCtrl">
+    <script type="text/ng-template" id="addAbsenceModal.html">
+        <div class="modal-header">
+			<h3 class="modal-title">{{form.edit ? 'Edit Leave' : 'Add a Leave'}}</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" role="form">
+				<div class="alert" ng-class="{'alert-warning': clashMsg()}" ng-bind-html="clashMsg()" 
+					ng-if="clashMsg()!=''"></div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label">Leave Type</label>
+					<div class="col-sm-9">
+						<select class="form-control" ng-model="form.value" ng-options="key as value for (key, value) in form.leaves">
+						</select>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': form.errors.start}">
+					<label class="col-sm-3 control-label">Start Date</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control" placeholder="DD/MM/YYYY" ng-model="form.start">
+						<p class="help-block" ng-if="form.errors.start" ng-bind="form.errors.start"></p>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': form.errors.end}">
+					<label class="col-sm-3 control-label">End Date</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control" placeholder="DD/MM/YYYY" ng-model="form.end">
+						<p class="help-block" ng-if="form.errors.end" ng-bind="form.errors.end"></p>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': form.errors.unit}">
+					<label class="col-sm-3 control-label">Slots</label>
+					<div class="col-sm-9">
+						<div class="checkbox">
+							<label><input type="checkbox" ng-model="form.am">AM</label>
+							<label><input type="checkbox" ng-model="form.pm">PM</label>
+							<p class="help-block" ng-if="form.errors.unit" ng-bind="form.errors.unit"></p>
+						</div>
+					</div>
+				</div>
+			</form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">{{form.edit ? 'Update': 'Add'}}</button>
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+</div>
+<div ng-controller="ViewAbsenceModalCtrl">
+    <script type="text/ng-template" id="viewAbsenceModal.html">
+        <div class="modal-header">
+            <h3 class="modal-title">View Leaves on {{leave.date}} {{leave.slot}}</h3>
+        </div>
+        <div class="modal-body">
+            <table class="table table-hover">
+				<tr><th>Name</th><th>Leave Type</th><th>&nbsp;</th></tr>
+				<tr ng-repeat="ab in leave.absentees">
+					<td>{{ab.name}}</td>
+					<td>{{getLeaveType(ab.value)}}</td>
+					<td class="text-right">
+						<a class="btn btn-xs btn-default" href="#" ng-click="editLeave(ab)" 
+							ng-if="ab.userid == leave.userid && !isBeforeToday(ab.date)">
+							<span class="glyphicon glyphicon-edit"></span> Edit</a>
+						<a class="btn btn-xs btn-default" href="#" ng-click="deleteLeave(ab)" 
+							ng-if="ab.userid == leave.userid && !isBeforeToday(ab.date)">
+							<span class="glyphicon glyphicon-remove"></span> Delete</a>
+					</td>
+				</tr>
+			</table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">OK</button>
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+</div>
+<div ng-controller="ConfirmationModalCtrl">
+    <script type="text/ng-template" id="confirmationModal.html">
+        <div class="modal-body">
+            <p>{{message}}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">OK</button>
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+</div>
+<!-- scripts go down here -->
+<script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="bower_components/jquery-ui/ui/minified/jquery-ui.min.js"></script>
+<script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+<script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<script type="text/javascript" src="bower_components/angular-ui-calendar/src/calendar.js"></script>
+<script type="text/javascript" src="bower_components/fullcalendar/fullcalendar.js"></script>
+<script type="text/javascript" src="bower_components/fullcalendar/gcal.js"></script>
+<script type="text/javascript" src="bower_components/moment/moment.js"></script>
+<script type="text/javascript" src="bower_components/datejs/build/date-en-US.js"></script>
+<script type="text/javascript" src="scripts/calendar.js"></script>
+
+<script>
+var list = <%- JSON.stringify(list) %>;
+var userid = <%- JSON.stringify(userid) %>;
+var username = <%- JSON.stringify(username) %>;
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+div.main {
+	padding-top: 60px
+}
+
+p.help-block {
+	margin-bottom: 0
+}
+
+.btn-xs, .btn-group-xs>.btn {
+	padding: 0 5px;
+}
+
+.fc-header-title h2 {
+	font-size: 24px;
+}
+
+.fc-event {
+	font-size: 11px
+}
+
+.fc-event.V {
+    background-color: green;
+}
+
+.fc-event.T {
+    background-color: red;
+}
+
+.fc-event.P {
+    background-color: blue;
+}
+
+.fc-grid .fc-event-time {
+	display: block
+}
+
+.fc-event.people1 {
+	background-color: rgba(58, 135, 173, 0.6)
+}
+.fc-event.people2 {
+	background-color: rgba(58, 135, 173, 0.65)
+}
+.fc-event.people3 {
+	background-color: rgba(58, 135, 173, 0.7)
+}
+.fc-event.people4 {
+	background-color: rgba(58, 135, 173, 0.75)
+}
+.fc-event.people5 {
+	background-color: rgba(58, 135, 173, 0.8)
+}
+.fc-event.people6 {
+	background-color: rgba(58, 135, 173, 0.85)
+}
+.fc-event.people7 {
+	background-color: rgba(58, 135, 173, 0.9)
+}
+.fc-event.people8 {
+	background-color: rgba(58, 135, 173, 0.95)
+}
+.fc-event.people9 {
+	opacity: 1;
+}
