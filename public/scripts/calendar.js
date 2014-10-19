@@ -64,6 +64,34 @@ angular
 		obj.isBeforeToday = function(date) {
 			return moment.utc(date, TIME_FORMAT, true).isBefore(moment.utc().startOf('day'));
 		};
+		obj.isWeekEnd = function(date) {
+			if(!moment.isMoment(date)) {
+				date = moment.utc(date, TIME_FORMAT);
+			}
+			return date.weekday() == 6 || date.weekday() == 0;
+		};
+		obj.addDays = function(date, days) {
+			if(!moment.isMoment(date)) {
+				date = moment.utc(date, TIME_FORMAT);
+			}
+			// will have to add days one by one
+			if(days < 0) {
+				for(var i=days; i<0; i++) {
+					date.add(-1, "days");
+					while(obj.isWeekEnd(date)) {
+						date.add(-1, "days");
+					}
+				}
+			} else {
+				for(var i=1; i<=days; i++) {
+					date.add(1, "days");
+					while(obj.isWeekEnd(date)) {
+						date.add(1, "days");
+					}
+				}
+			}
+			return date;
+		};
 		obj.isEmpty = function(o) {
 			o = o == undefined ? '' : o;
 			if(typeof o === "string") {
@@ -311,6 +339,10 @@ angular
 			
 			var clashes = [];
 			var traverseSlots = function(slots, date, merges, user, overlaps) {
+				if(!moment.isMoment(date)) {
+					date = moment.utc(date, TIME_FORMAT);
+				}
+				date = date.format(TIME_FORMAT);
 				slots.forEach(function(slot) {
 					var date_unit = date + '__' + slot;
 					if(merges[date_unit]) {
@@ -328,8 +360,7 @@ angular
 				var overlaps = [];
 				var merges = Utils.merges;
 				while (startMoment <= endMoment) {
-					var date = startMoment.format(TIME_FORMAT);
-					traverseSlots(slots, date, merges, user, overlaps);
+					traverseSlots(slots, startMoment, merges, user, overlaps);
 					startMoment.add(1, 'days');
 				}
 				overlaps = Utils.unique(overlaps);
@@ -338,16 +369,18 @@ angular
 				}
 				
 				// check adjacent
-				// considering if leave is within one day of other user
 				startMoment = moment(start, TIME_FORMAT, true);
 				endMoment = moment(end, TIME_FORMAT, true);
 				merges = Utils.merges;
 				var adjacents = [];
 				while (startMoment <= endMoment) {
-					var startCopy = startMoment.clone();
-					startCopy.add(1, 'days');
-					var date = startCopy.format(TIME_FORMAT);
-					traverseSlots(slots, date, merges, user, adjacents);
+					var startCopy;
+					startCopy = Utils.addDays(startMoment.clone(), -1); // before 1 day
+					traverseSlots(slots, startCopy, merges, user, adjacents);
+					
+					startCopy = Utils.addDays(startMoment.clone(), 1); // upcoming 1 day
+					traverseSlots(slots, startCopy, merges, user, adjacents);
+					
 					startMoment.add(1, 'days');
 				}
 				adjacents = Utils.unique(adjacents);
@@ -361,10 +394,25 @@ angular
 				merges = Utils.merges;
 				var within4 = [];
 				while (startMoment <= endMoment) {
-					var startCopy = startMoment.clone();
-					startCopy.add(4, 'days');
-					var date = startCopy.format(TIME_FORMAT);
-					traverseSlots(slots, date, merges, user, within4);
+					var startCopy;
+					startCopy = Utils.addDays(startMoment.clone(), -2); // before 2 days
+					traverseSlots(slots, startCopy, merges, user, within4);
+					
+					startCopy = Utils.addDays(startMoment.clone(), 2); // upcoming 2 days
+					traverseSlots(slots, startCopy, merges, user, within4);
+					
+					startCopy = Utils.addDays(startMoment.clone(), -3); // before 3 days
+					traverseSlots(slots, startCopy, merges, user, within4);
+					
+					startCopy = Utils.addDays(startMoment.clone(), 3); // upcoming 3 days
+					traverseSlots(slots, startCopy, merges, user, within4);
+					
+					startCopy = Utils.addDays(startMoment.clone(), -4); // before 4 days
+					traverseSlots(slots, startCopy, merges, user, within4);
+					
+					startCopy = Utils.addDays(startMoment.clone(), 4); // upcoming 4 days
+					traverseSlots(slots, startCopy, merges, user, within4);
+					
 					startMoment.add(1, 'days');
 				}
 				within4 = Utils.unique(within4);
@@ -411,7 +459,7 @@ angular
 			}
 			var merges = Utils.merges;
 			while (startMoment <= endMoment) {
-				if(startMoment.day() == 6 || startMoment.day() == 0) { // skip weekends
+				if(Utils.isWeekEnd(startMoment)) { // skip weekends
 					startMoment.add(1, 'days');
 					continue;
 				}
