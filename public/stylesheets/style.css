@@ -1,3 +1,12 @@
+body {
+	font-family: 'Segoe UI', Frutiger, 'Frutiger Linotype', 'Dejavu Sans', 'Helvetica Neue', Arial, sans-serif;
+}
+
+hr {
+	border-top: 1px solid #C5C5C5;
+	margin-bottom: 10px;
+}
+
 div.main {
 	padding-top: 60px
 }
@@ -60,4 +69,104 @@ p.help-block {
 }
 .fc-event.people9 {
 	opacity: 1;
+}
+
+html, body {
+	width: 100%;
+	height: 100%;
+}
+
+#table-container {
+	width: 87.2%;
+}
+
+/* Table */
+.handsontable {
+	float: left;
+}
+
+.handsontable .handsontable table {
+	-webkit-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2)
+}
+
+.handsontable col.rowHeader {
+	width: 100px;
+}
+
+.handsontable th, .handsontable td {
+	font-size: 13px;
+	height: 20px;
+	line-height: 19px;
+}
+
+.header-person-team, .header-person-initials {
+	border-radius: 3px;
+	padding: 2px 5px;
+	width: 36px
+}
+
+.header-person-initials {
+	border-radius: 0;
+	background: white;
+	color: #777;
+	border: 1px solid #CCC
+}
+
+/* Legends */
+
+#legend-container {
+	width: 12.8%;
+	padding-right: 0
+}
+
+.workstream-container > div {
+	margin-top: 5px
+}
+
+.workstream-container .badge {
+	border-radius: 3px;
+	width: 40px;
+	cursor: pointer
+}
+
+.workstream-container .badge.disabled {
+	opacity: 0.4
+}
+
+.person-container .person-initial {
+	border: 1px solid #BBB;
+	padding: 0 2px;
+	width: 28px;
+	text-align: center;
+	font-size: 11px;
+	color: #777;
+	cursor: pointer;
+	float: left;
+}
+
+.person-container .person-initial:HOVER, .person-container .person-initial.active {
+	background: #DDD;
+}
+
+.person-container .person-initial+.person-initial {
+	margin-left: 4px;
+	margin-top: 4px;
+}
+
+.person-container .person-initial.break6 {
+	margin-left: 0;
+}
+
+.person-container .person-initial.top {
+	margin-top: 4px
+}
+
+.information-box > div {
+	padding: 1px 5px;
+	border: 1px solid #CCC
+}
+
+.information-box > div+div {
+	border-top: 0px;
 }

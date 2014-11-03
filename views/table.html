@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+<title>Absenteeism Manager</title>
+<link rel="stylesheet" href="bower_components/handsontable/dist/jquery.handsontable.css">
+<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="stylesheets/style.css">
+</head>
+<body ng-controller="BodyController">
+	
+<header class="navbar navbar-default navbar-fixed-top">
+<div class="navbar-inner">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-3" ng-click="isCollapsed = !isCollapsed">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand visible-xs" href="#">Absenteeism Manager</a>
+		</div>
+		<nav class="hidden-xs">
+			<ul class="nav navbar-nav">
+				<a href="#" role="button" class="navbar-brand">
+					Absenteeism Manager
+				</a>
+			</ul>
+			<ul class="nav navbar-nav pull-right">
+				<li class="dropdown">
+					<a role="button" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+						<%= username %> <b class="caret"></b>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Settings</a></li>
+						<li><a href="#">Logout</a></li>
+					</ul>
+				</li>
+			</ul>
+		</nav>
+		<nav class="collapse" collapse="!isCollapsed">
+			<ul class="nav navbar-nav">
+				<li><a href="#" ng-click="isCollapsed = !isCollapsed"><%= username %></a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>
+</header>
+
+<div class="main container-fluid" ng-controller="MyController">
+	<div class="row">
+		<div class="col-md-4 pull-right text-right">
+			
+		</div>
+	</div>
+	<br/>
+	<div class="row visible-xs">
+		<div class="col-md-12" id="legend-container-hidden" ng-controller="LegendController">
+			<div>Select any date under your name to book absence, or click
+			<button class="btn btn-primary btn-sm" ng-click="addLeave()"><span class="glyphicon glyphicon-plus"></span> Add a Leave</button>
+			</div>
+			<div class="row">
+				<div class="col-xs-1">
+					Filter by:
+				</div>
+				<div class="col-xs-4">
+					<div>Workstream</div>
+					<div class="workstream-container">
+						<div ng-repeat="user in users | unique: 'workstream'" ng-init="wk = workstreams[user.workstreamid]">
+							<span class="badge" ng-bind="user.workstreamid" 
+								  style="background-color: {{wk.background}}; color: {{wk.color}}"
+								  ng-class="{'disabled': !isWorkstreamShown(user.workstreamid)}"
+								  ng-click="filterByWorkstream(user.workstreamid)"></span>
+							<span ng-bind="user.workstream"></span>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-5">
+					<div>Person</div>
+					<div class="person-container clearfix">
+						<span class="person-initial" ng-repeat="user in users" 
+							  ng-bind="initials(user.name)" title="{{user.name}}"
+							  ng-class="{'break6': $index % inARow == 0, 'top': $index < inARow, 'active': isUserShown(user.userid)}"
+							  ng-click="filterByUser(user.userid)">
+						</span>
+					</div>
+				</div>
+				<div class="col-xs-2">
+					<div class="information-box">
+						<div ng-repeat="leave in leaves" ng-bind="leave.title" 
+							 style="background-color: {{leave.background}}; color: {{leave.color}}"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<br/>
+	<div class="row">
+		<div class="col-md-1 hidden-xs" id="legend-container" ng-controller="LegendController">
+			<p>Select any date under your name to book absence, or click</p>
+			<button class="btn btn-primary btn-sm" ng-click="addLeave()"><span class="glyphicon glyphicon-plus"></span> Add a Leave</button>
+			<hr>
+			<p>Filter by:</p>
+			<div>Workstream</div>
+			<div class="workstream-container">
+				<div ng-repeat="user in users | unique: 'workstream'" ng-init="wk = workstreams[user.workstreamid]">
+					<span class="badge" ng-bind="user.workstreamid" 
+						  style="background-color: {{wk.background}}; color: {{wk.color}}"
+						  ng-class="{'disabled': !isWorkstreamShown(user.workstreamid)}"
+						  ng-click="filterByWorkstream(user.workstreamid)"></span>
+					<span ng-bind="user.workstream"></span>
+				</div>
+			</div>
+			<br/>
+			<div>Person</div>
+			<div class="person-container clearfix">
+				<span class="person-initial" ng-repeat="user in users" 
+					  ng-bind="initials(user.name)" title="{{user.name}}"
+					  ng-class="{'break6': $index%5==0, 'top': $index<5, 'active': isUserShown(user.userid)}"
+					  ng-click="filterByUser(user.userid)">
+				</span>
+			</div>
+			<hr>
+			<p>Information:</p>
+			<div class="information-box">
+				<div ng-repeat="leave in leaves" ng-bind="leave.title" 
+					 style="background-color: {{leave.background}}; color: {{leave.color}}"></div>
+			</div>
+		</div>
+		<div class="col-md-11" id="table-container">
+			<div id="handsontable">
+			</div>
+		</div>
+	</div>
+</div> 
+
+<!--Modals-->
+<div ng-controller="AddAbsenceModalCtrl">
+    <script type="text/ng-template" id="addAbsenceModal.html">
+        <div class="modal-header">
+			<h3 class="modal-title">{{form.edit ? 'Edit Leave' : 'Add a Leave'}}</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" role="form">
+				<ul class="list-group">
+					<li class="list-group-item list-group-item-danger" ng-if="clashMsg().danger" ng-bind="clashMsg().danger"></li>
+					<li class="list-group-item list-group-item-warning" ng-if="clashMsg().warning" ng-bind="clashMsg().warning"></li>
+					<li class="list-group-item list-group-item-info" ng-if="clashMsg().info" ng-bind="clashMsg().info"></li>
+					<li class="list-group-item list-group-item-success" ng-if="clashMsg().success" ng-bind="clashMsg().success"></li>
+				</ul>
+				<div class="form-group">
+					<label class="col-sm-3 control-label">Leave Type</label>
+					<div class="col-sm-9">
+						<select class="form-control" ng-model="form.value" ng-options="key as value.title for (key, value) in form.leaves">
+						</select>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': form.errors.start}">
+					<label class="col-sm-3 control-label">Start Date</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control" placeholder="DD/MM/YYYY" ng-model="form.start">
+						<p class="help-block" ng-if="form.errors.start" ng-bind="form.errors.start"></p>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': form.errors.end}">
+					<label class="col-sm-3 control-label">End Date</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control" placeholder="DD/MM/YYYY" ng-model="form.end">
+						<p class="help-block" ng-if="form.errors.end" ng-bind="form.errors.end"></p>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': form.errors.unit}">
+					<label class="col-sm-3 control-label">Slots</label>
+					<div class="col-sm-9">
+						<div class="checkbox">
+							<label><input type="checkbox" ng-model="form.am">AM</label>
+							<label><input type="checkbox" ng-model="form.pm">PM</label>
+							<p class="help-block" ng-if="form.errors.unit" ng-bind="form.errors.unit"></p>
+						</div>
+					</div>
+				</div>
+			</form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">{{form.edit ? 'Update': 'Add'}}</button>
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+</div>
+<!-- scripts go down here -->
+<script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+<script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<script type="text/javascript" src="bower_components/handsontable/dist/jquery.handsontable.full.js"></script>
+<script type="text/javascript" src="bower_components/moment/moment.js"></script>
+<script type="text/javascript" src="bower_components/datejs/build/date-en-US.js"></script>
+<script type="text/javascript" src="bower_components/angular-filter/dist/angular-filter.min.js"></script>
+<script type="text/javascript" src="scripts/table.js"></script>
+
+<script>
+var list = <%- JSON.stringify(list) %>;
+var users = <%- JSON.stringify(users) %>;
+var userid = <%- JSON.stringify(userid) %>;
+var username = <%- JSON.stringify(username) %>;
+</script>
+</body>
+</html>

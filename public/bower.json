@@ -27,7 +27,10 @@
     "angular-bootstrap": "~0.11.2",
     "angular-ui-calendar": "~0.8.1",
     "moment": "~2.8.3",
-    "datejs": "~1.0.0-rc1"
+    "datejs": "~1.0.0-rc1",
+    "handsontable": "~0.11.4",
+    "nghandsontable": "~0.4.0",
+    "angular-filter": "~0.4.9"
   },
   "resolutions": {
     "jquery-ui": "~1.11.2",

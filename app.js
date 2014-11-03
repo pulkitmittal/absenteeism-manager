@@ -31,11 +31,13 @@ if ('development' == app.get('env')) {
 }
 
 var list = [];
+var users = [];
 app.get('/', function(req, res) {
-	res.render('calendar', {
+	res.render('table', {
         list: list,
-		userid: '1',
-		username: 'Matthew Webb'
+		users: users,
+		userid: '3',
+		username: 'Henry Sullivan'
     });
 });
 
@@ -51,6 +53,19 @@ http.createServer(app).listen(app.get('port'), function(){
                     json[output[0][j]] = output[i][j];
                 }
                 list.push(json);
+            }
+	   });
+    });
+	
+	fs.readFile(__dirname+'/usersworkstream.csv', 'binary', function(err, data) {
+        //console.log(err, data);
+        parse(data, {delimiter: ','}, function(err, output){
+            for(var i=1; i<output.length; i++) {
+                var json = {};
+                for(var j=0; j<output[i].length; j++) {
+                    json[output[0][j]] = output[i][j];
+                }
+                users.push(json);
             }
 	   });
     });
